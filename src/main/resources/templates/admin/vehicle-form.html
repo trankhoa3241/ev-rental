@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isNew ? 'Thêm xe mới' : 'Chỉnh sửa xe'}"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h5 {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .image-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            margin-top: 10px;
+        }
+        .image-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .image-upload-area:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+            border-color: #764ba2;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .btn-back {
+            border: 1px solid #ddd;
+            color: #333;
+            padding: 12px 40px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-bolt text-warning"></i> EV Rental
+            </a>
+            <div class="ms-auto">
+                <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="form-container">
+            <h2 class="fw-bold mb-4" th:text="${isNew ? '✨ Thêm xe mới' : '✏️ Chỉnh sửa xe'}"></h2>
+
+            <form th:action="@{/admin/vehicle/save}" method="post" enctype="multipart/form-data" id="vehicleForm">
+                <!-- Hidden ID field -->
+                <input type="hidden" name="id" th:value="${vehicle.id}" />
+
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-info-circle"></i> Thông tin cơ bản</h5>
+                    <div class="grid-2">
+                        <div>
+                            <label class="form-label">Thương hiệu *</label>
+                            <input type="text" name="brand" class="form-control" th:value="${vehicle.brand}" required
+                                   placeholder="VD: Tesla, Honda, Vespa">
+                        </div>
+                        <div>
+                            <label class="form-label">Mẫu xe *</label>
+                            <input type="text" name="model" class="form-control" th:value="${vehicle.model}" required
+                                   placeholder="VD: Model 3, Vision, S">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Details Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-cog"></i> Chi tiết xe</h5>
+                    <div class="grid-2">
+                        <div>
+                            <label class="form-label">Loại xe *</label>
+                            <select name="vehicleType" class="form-select" required>
+                                <option value="">-- Chọn loại xe --</option>
+                                <option value="CAR" th:selected="${vehicle.vehicleType == 'CAR'}">Ô tô</option>
+                                <option value="MOTORCYCLE" th:selected="${vehicle.vehicleType == 'MOTORCYCLE'}">Xe máy</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Biển số xe *</label>
+                            <input type="text" name="licensePlate" class="form-control" th:value="${vehicle.licensePlate}" required
+                                   placeholder="VD: ABC123">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Specifications Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-battery-three-quarters"></i> Thông số kỹ thuật</h5>
+                    <div class="grid-2">
+                        <div>
+                            <label class="form-label">Dung lượng pin (kWh) *</label>
+                            <input type="number" name="batteryCapacity" class="form-control" th:value="${vehicle.batteryCapacity}" 
+                                   step="0.1" required placeholder="VD: 85">
+                        </div>
+                        <div>
+                            <label class="form-label">Quãng đường tối đa (km) *</label>
+                            <input type="number" name="maxRange" class="form-control" th:value="${vehicle.maxRange}" 
+                                   required placeholder="VD: 500">
+                        </div>
+                        <div>
+                            <label class="form-label">Mức pin hiện tại (%) *</label>
+                            <input type="number" name="currentCharge" class="form-control" th:value="${vehicle.currentCharge}" 
+                                   min="0" max="100" required placeholder="VD: 85">
+                        </div>
+                        <div>
+                            <label class="form-label">Vị trí hiện tại *</label>
+                            <input type="text" name="currentLocation" class="form-control" th:value="${vehicle.currentLocation}" 
+                                   required placeholder="VD: 123 Đường Nguyễn Hữu Cảnh">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-money-bill"></i> Giá cả</h5>
+                    <div class="grid-2">
+                        <div>
+                            <label class="form-label">Giá/giờ (₫) *</label>
+                            <input type="number" name="pricePerHour" class="form-control" th:value="${vehicle.pricePerHour}" 
+                                   step="1000" required placeholder="VD: 250000">
+                        </div>
+                        <div>
+                            <label class="form-label">Giá/ngày (₫) *</label>
+                            <input type="number" name="pricePerDay" class="form-control" th:value="${vehicle.pricePerDay}" 
+                                   step="1000" required placeholder="VD: 2000000">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-align-left"></i> Mô tả</h5>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết về xe..."
+                              th:text="${vehicle.description}"></textarea>
+                </div>
+
+                <!-- Image Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-image"></i> Hình ảnh (Cloudinary)</h5>
+                    
+                    <!-- Hiện ảnh hiện tại nếu đang chỉnh sửa -->
+                    <div th:if="${!isNew && vehicle.imageUrl}" class="mb-4">
+                        <label class="form-label fw-bold">📸 Hình ảnh hiện tại:</label>
+                        <div class="alert alert-info">
+                            <img th:src="${vehicle.imageUrl}" alt="Current Vehicle Image" 
+                                 style="max-width: 100%; max-height: 300px; border-radius: 8px; object-fit: cover;">
+                        </div>
+                    </div>
+
+                    <!-- Upload ảnh mới -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-image"></i> 🆕 Chọn hình ảnh mới (tuỳ chọn)
+                        </label>
+                        <input 
+                            type="file" 
+                            id="imageInput" 
+                            name="imageFile" 
+                            class="form-control"
+                            accept="image/*" 
+                            onchange="previewImage(this)">
+                        <small class="text-muted d-block mt-2">
+                            ✓ Định dạng: JPG, PNG, GIF, WebP | ✓ Max 5MB | ✓ Tự động upload lên Cloudinary
+                        </small>
+                    </div>
+
+                    <!-- Preview ảnh đã chọn -->
+                    <div id="imagePreview" class="mb-4"></div>
+                    
+                    <div id="uploadStatus" class="alert d-none" role="alert"></div>
+                </div>
+
+                <!-- Availability Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-check-circle"></i> Trạng thái</h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="isAvailable" id="isAvailable" 
+                               th:checked="${vehicle.isAvailable == null ? true : vehicle.isAvailable}" value="true">
+                        <label class="form-check-label" for="isAvailable">
+                            Có sẵn để cho thuê
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="d-flex gap-3 mt-5">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save"></i> <span th:text="${isNew ? 'Thêm xe' : 'Cập nhật xe'}"></span>
+                    </button>
+                    <a th:href="@{/admin/dashboard}" class="btn btn-back">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Xử lý preview hình ảnh
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            if (!input.files || !input.files[0]) {
+                preview.innerHTML = '';
+                uploadStatus.classList.add('d-none');
+                return;
+            }
+
+            const file = input.files[0];
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            // Validate file size
+            if (file.size > MAX_FILE_SIZE) {
+                uploadStatus.className = 'alert alert-danger d-block';
+                uploadStatus.innerHTML = '❌ <strong>Lỗi:</strong> Kích thước file không được vượt quá 5MB!';
+                preview.innerHTML = '';
+                input.value = '';
+                return;
+            }
+
+            // Validate file type
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                uploadStatus.className = 'alert alert-danger d-block';
+                uploadStatus.innerHTML = '❌ <strong>Lỗi:</strong> Vui lòng chọn định dạng JPG, PNG, GIF hoặc WebP!';
+                preview.innerHTML = '';
+                input.value = '';
+                return;
+            }
+
+            // Show file info
+            const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+            uploadStatus.className = 'alert alert-info d-block';
+            uploadStatus.innerHTML = `✅ File đã chọn: <strong>${file.name}</strong> (${fileSizeMB}MB) - Sẵn sàng upload!`;
+
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Setup file input click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('imageInput');
+            const uploadLabel = document.querySelector('label[for="imageInput"]');
+            
+            if (uploadLabel) {
+                uploadLabel.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    imageInput.click();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Rental System - Cho thuê xe điện</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fas fa-bolt text-warning"></i> EV Rental
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/}">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/vehicles}">Thuê xe</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/about}">Về chúng tôi</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/contact}">Liên hệ</a></li>
+                    
+                    <!-- Admin Link -->
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link text-success fw-bold" th:href="@{/admin/dashboard}">
+                            <i class="fas fa-crown"></i> Admin Panel
+                        </a>
+                    </li>
+                    
+                    <!-- User Menu -->
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span sec:authentication="name"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user-circle"></i> Hồ sơ</a></li>
+                            <li><a class="dropdown-item" th:href="@{/my-rentals}"><i class="fas fa-car"></i> Chuyến của tôi</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Login Button -->
+                    <li class="nav-item ms-3" sec:authorize="isAnonymous()">
+                        <a class="btn btn-warning btn-sm" th:href="@{/auth/login}">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient">
+        <div class="container h-100 d-flex flex-column justify-content-center align-items-center text-center">
+            <h1 class="display-3 fw-bold text-white mb-3">
+                <i class="fas fa-leaf text-success"></i> Cho Thuê Xe Điện
+            </h1>
+            <p class="lead text-white-50 mb-4 fs-5">
+                Giải pháp di chuyển xanh, tiện lợi và hiện đại cho bạn
+            </p>
+            
+            <!-- Search Section -->
+            <div class="search-card bg-white rounded-lg shadow-lg p-4 w-100" style="max-width: 600px;">
+                <form th:action="@{/vehicles/search}" method="get" class="d-flex gap-2 flex-wrap">
+                    <select name="vehicleType" class="form-select flex-grow-1">
+                        <option value="">Loại xe</option>
+                        <option value="MOTORCYCLE">Xe máy</option>
+                        <option value="CAR">Ô tô</option>
+                    </select>
+                    <select name="brand" class="form-select flex-grow-1">
+                        <option value="">Thương hiệu</option>
+                        <option value="Tesla">Tesla</option>
+                        <option value="Honda">Honda</option>
+                        <option value="Vespa">Vespa</option>
+                    </select>
+                    <input type="number" name="maxPrice" placeholder="Giá tối đa" class="form-control flex-grow-1">
+                    <button type="submit" class="btn btn-warning fw-bold">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">Tại sao chọn EV Rental?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-lg bg-white shadow">
+                        <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold">Thân thiện Môi trường</h5>
+                        <p class="text-muted">Giảm phát thải carbon, bảo vệ môi trường cho thế hệ tương lai.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-lg bg-white shadow">
+                        <i class="fas fa-dollar-sign fa-3x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Giá Rẻ & Minh bạch</h5>
+                        <p class="text-muted">Không phí ẩn, giá cạnh tranh, tiết kiệm chi phí di chuyển.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-lg bg-white shadow">
+                        <i class="fas fa-map-location-dot fa-3x text-danger mb-3"></i>
+                        <h5 class="fw-bold">Dễ Dàng Tiếp Cận</h5>
+                        <p class="text-muted">Nhiều điểm nhận xe, bản đồ trạm sạc gần nhất, hỗ trợ 24/7.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Vehicles Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="fw-bold mb-4">Xe Nổi Bật</h2>
+            <div class="row g-4">
+                <div th:each="vehicle : ${featuredVehicles}" class="col-md-4">
+                    <div class="card vehicle-card shadow-sm border-0 h-100">
+                        <img th:src="${vehicle.imageUrl}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold" th:text="${vehicle.brand + ' ' + vehicle.model}"></h5>
+                            <p class="text-muted small" th:text="${vehicle.vehicleType == 'MOTORCYCLE' ? 'Xe máy' : 'Ô tô'}"></p>
+                            
+                            <div class="d-flex justify-content-between mb-3">
+                                <span><i class="fas fa-bolt text-warning"></i> <span th:text="${vehicle.currentCharge + '%'}"></span></span>
+                                <span><i class="fas fa-road"></i> <span th:text="${vehicle.maxRange + ' km'}"></span></span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-warning" th:text="${vehicle.ratings + '★'}"></span>
+                                    <small class="text-muted" th:text="${vehicle.totalReviews + ' đánh giá'}"></small>
+                                </div>
+                                <span class="fw-bold text-primary" th:text="'₫' + ${#numbers.formatInteger(vehicle.pricePerHour, 0)}"></span>
+                            </div>
+                        </div>
+                        <div class="card-footer border-top bg-white">
+                            <a th:href="@{/vehicles/{id}(id=${vehicle.id})}" class="btn btn-warning btn-sm w-100">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-5 bg-dark text-white">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h2 class="fw-bold text-warning" th:text="${totalVehicles}">100+</h2>
+                    <p>Chiếc xe</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="fw-bold text-warning">10K+</h2>
+                    <p>Khách hàng hài lòng</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="fw-bold text-warning">50+</h2>
+                    <p>Điểm nhận xe</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="fw-bold text-warning">200+</h2>
+                    <p>Trạm sạc</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 bg-light">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-3">Sẵn sàng bắt đầu?</h2>
+            <p class="lead text-muted mb-4">Đăng ký ngay để nhận ưu đãi đặc biệt</p>
+            <a th:href="@{/auth/register}" class="btn btn-warning btn-lg fw-bold">
+                <i class="fas fa-user-plus"></i> Đăng ký miễn phí
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5><i class="fas fa-bolt text-warning"></i> EV Rental</h5>
+                    <p class="text-muted">Giải pháp cho thuê xe điện hiện đại, thân thiện với môi trường.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5>Liên kết nhanh</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted text-decoration-none">Điều khoản sử dụng</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Chính sách bảo mật</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Trợ giúp</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5>Liên hệ</h5>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-phone"></i> 1900-1234<br>
+                        <i class="fas fa-envelope"></i> support@evrental.com
+                    </p>
+                </div>
+            </div>
+            <hr class="bg-secondary my-3">
+            <p class="text-center text-muted mb-0">&copy; 2024 EV Rental System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
