@@ -1,6 +1,7 @@
 package com.evrental.evrentalsystem.controller;
 
 import com.evrental.evrentalsystem.repository.VehicleRepository;
+import com.evrental.evrentalsystem.entity.Vehicle;
 import com.evrental.evrentalsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,15 +23,25 @@ public class HomeController {
     private UserRepository userRepository;
 
     @GetMapping("/")
-    public String index(Model model) {
-        // Lấy 6 xe được đánh giá cao nhất để hiển thị
-        var featuredVehicles = vehicleRepository.findTop6ByIsAvailableTrueOrderByRatingsDesc();
+public String index(Model model) {
+    // 1. Gọi hàm lấy dữ liệu
+    List<Vehicle> featuredVehicles = vehicleRepository.findTop6ByOrderByRatingsDesc();
 
-        model.addAttribute("featuredVehicles", featuredVehicles);
-        model.addAttribute("totalVehicles", vehicleRepository.count());
-
-        return "index";
+    // 2. DÒNG NÀY ĐỂ KIỂM TRA (Nhìn vào Console của IntelliJ/VS Code khi chạy)
+    System.out.println("---------- DEBUG VEHICLES ----------");
+    if (featuredVehicles == null || featuredVehicles.isEmpty()) {
+        System.out.println("KẾT QUẢ: KHÔNG lấy được xe nào từ Database!");
+    } else {
+        System.out.println("KẾT QUẢ: Lấy được " + featuredVehicles.size() + " chiếc xe.");
+        featuredVehicles.forEach(v -> System.out.println(" - Xe: " + v.getBrand() + " " + v.getModel()));
     }
+    System.out.println("------------------------------------");
+
+    model.addAttribute("featuredVehicles", featuredVehicles);
+    model.addAttribute("totalVehicles", vehicleRepository.count());
+
+    return "index";
+}
 
     @GetMapping("/about")
     public String about() {

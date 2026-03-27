@@ -40,83 +40,75 @@ public class RentalController {
     private UserRepository userRepository;
 
     @GetMapping("/booking/create")
-    @PreAuthorize("isAuthenticated()")
-    public String bookingForm(@RequestParam(name = "vehicleId", required = false) String vehicleId,
-                              Model model) {
-        if (vehicleId != null) {
-            vehicleRepository.findById(vehicleId).ifPresent(v -> model.addAttribute("vehicle", v));
-        }
-        return "booking/create";
-    }
+@PreAuthorize("isAuthenticated()")
+public String bookingForm(@RequestParam(name = "vehicleId") String vehicleId, Model model) {
+    Vehicle vehicle = vehicleRepository.findById(vehicleId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + vehicleId));
+    model.addAttribute("vehicle", vehicle);
+    return "booking/create";
+}
 
     // API endpoint để validate booking
-    @PostMapping("/api/booking/validate")
-    @PreAuthorize("isAuthenticated()")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> validateBooking(
-            @RequestParam String vehicleId,
-            @RequestParam String startDate,
-            @RequestParam String endDate,
-            Principal principal) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            log.info("🔍 Validating booking: vehicleId={}, startDate={}, endDate={}, user={}", 
-                vehicleId, startDate, endDate, principal.getName());
-            
-            // Check vehicle exists
-            Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                    .orElseThrow(() -> new RuntimeException("Xe không tồn tại"));
-            
-            if (!vehicle.getIsAvailable()) {
-                response.put("valid", false);
-                response.put("message", "Xe không còn khả dụng");
-                response.put("pricePerHour", vehicle.getPricePerHour());
-                return ResponseEntity.ok(response);
-            }
-            
-            // Check user exists
-            User user = userRepository.findByEmail(principal.getName())
-                    .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-            
-            // Parse dates
-            LocalDateTime start = LocalDateTime.parse(startDate);
-            LocalDateTime end = LocalDateTime.parse(endDate);
-            
-            // Validate dates
-            if (start.isAfter(end) || start.isBefore(LocalDateTime.now())) {
-                response.put("valid", false);
-                response.put("message", "Ngày bắt đầu phải sau ngày hôm nay và trước ngày kết thúc");
-                response.put("pricePerHour", vehicle.getPricePerHour());
-                return ResponseEntity.ok(response);
-            }
-            
-            // Calculate price
-            long hours = Duration.between(start, end).toHours();
-            if (hours == 0) hours = 1;
-            
-            BigDecimal totalPrice = vehicle.getPricePerHour()
-                    .multiply(BigDecimal.valueOf(hours));
-            
-            log.info("✅ Booking validation successful: hours={}, totalPrice={}", hours, totalPrice);
-            
-            response.put("valid", true);
-            response.put("message", "Đặt xe thành công!");
-            response.put("hours", hours);
-            response.put("pricePerHour", vehicle.getPricePerHour());
-            response.put("totalPrice", totalPrice);
-            response.put("vehicleName", vehicle.getBrand() + " " + vehicle.getModel());
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            log.error("❌ Booking validation error", e);
+    @PostMapping("/api/booking/validate") 
+@PreAuthorize("isAuthenticated()")
+@ResponseBody
+public ResponseEntity<Map<String, Object>> validateBooking(
+    @RequestParam String vehicleId,
+    @RequestParam String startDate,
+    @RequestParam String endDate,
+    Principal principal){
+    
+    Map<String, Object> response = new HashMap<>();
+    
+    try {
+        // 1. Kiểm tra đầu vào cơ bản
+        if (startDate.isEmpty() || endDate.isEmpty()) {
             response.put("valid", false);
-            response.put("message", "Lỗi kiểm tra: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            response.put("message", "Vui lòng chọn đầy đủ thời gian");
+            return ResponseEntity.ok(response);
         }
+
+        // 2. Kiểm tra Xe
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElse(null);
+        if (vehicle == null) {
+            response.put("valid", false);
+            response.put("message", "Xe không tồn tại trong hệ thống");
+            return ResponseEntity.ok(response);
+        }
+
+        // 3. Parse ngày tháng an toàn
+        LocalDateTime start = LocalDateTime.parse(startDate);
+        LocalDateTime end = LocalDateTime.parse(endDate);
+        
+        // 4. Kiểm tra logic ngày tháng
+        if (start.isAfter(end) || start.isBefore(LocalDateTime.now().minusMinutes(5))) {
+            response.put("valid", false);
+            response.put("message", "Thời gian đặt xe không hợp lệ");
+            return ResponseEntity.ok(response);
+        }
+        
+        // 5. Tính toán (Sử dụng giá trị mặc định nếu null)
+        long hours = Duration.between(start, end).toHours();
+        if (hours <= 0) hours = 1;
+        
+        BigDecimal price = vehicle.getPricePerHour() != null ? vehicle.getPricePerHour() : BigDecimal.ZERO;
+        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(hours));
+        
+        response.put("valid", true);
+        response.put("hours", hours);
+        response.put("totalPrice", totalPrice);
+        response.put("message", "Hợp lệ");
+        
+        return ResponseEntity.ok(response);
+        
+    } catch (Exception e) {
+        log.error("Lỗi validate: ", e);
+        response.put("valid", false);
+        response.put("message", "Lỗi hệ thống: " + e.getMessage());
+        return ResponseEntity.ok(response); // Trả về 200 kèm message lỗi thay vì trả về 500
     }
+}
 
     @PostMapping("/booking/create")
     @PreAuthorize("isAuthenticated()")
@@ -190,16 +182,22 @@ public class RentalController {
         return "redirect:/vehicles/" + vehicleId;
     }
 
-    @GetMapping("/my-rentals")
-    @PreAuthorize("isAuthenticated()")
-    public String myRentals(Principal principal, Model model) {
-        User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found: " + principal.getName()));
+   @GetMapping("/my-rentals")
+public String getMyRentals(Model model, Principal principal) {
+    if (principal == null) return "redirect:/login";
 
-        List<Rental> rentals = rentalService.getRentalsForUser(user.getId());
-        model.addAttribute("rentals", rentals);
-        return "user/my-rentals";
-    }
+    // 1. Lấy email từ người dùng đang đăng nhập, rồi tìm User trong DB
+    User currentUser = userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    // 2. Lấy danh sách thuê xe của đúng User đó
+    List<Rental> userRentals = rentalService.findByUser(currentUser);
+
+    // 3. Gửi dữ liệu sang HTML
+    model.addAttribute("rentals", userRentals);
+
+    return "user/my-rentals";
+}
 
     @PostMapping("/vehicles/{vehicleId}/rate")
     @PreAuthorize("isAuthenticated()")

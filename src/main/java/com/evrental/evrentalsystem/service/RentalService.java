@@ -109,6 +109,10 @@ public class RentalService {
         rentalRepository.save(rental);
         log.info("✅ Rental {} status updated to {}", rentalId, status);
     }
+    
+    public List<Rental> findByUser(User user) {
+        return rentalRepository.findByUser(user);
+    }
 
     public List<Map.Entry<Vehicle, Long>> getTopRentedVehicles(int limit) {
         Map<String, Long> counts = rentalRepository.findAll().stream()

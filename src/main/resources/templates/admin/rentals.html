@@ -23,22 +23,31 @@
                     </thead>
                     <tbody>
                         <tr th:each="rental : ${pending}">
-                            <td th:text="${rental.vehicle.brand + ' ' + rental.vehicle.model}"></td>
-                            <td th:text="${rental.user.email}"></td>
-                            <td th:text="${#dates.format(rental.pickupDateTime, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#dates.format(rental.returnDateTime, 'dd/MM/yyyy HH:mm')}"></td>
-                            <td th:text="${#numbers.formatInteger(rental.totalPrice, 0)}"></td>
-                            <td><span class="badge bg-warning">Đang xử lý</span></td>
+                            <td th:text="${rental.vehicle?.brand + ' ' + rental.vehicle?.model}">Tesla Model 3</td>
+        
+                            <td th:text="${rental.user?.email}">Email</td>
+        
                             <td>
-                                <a th:href="@{/admin/rentals/{id}(id=${rental.id})}" class="btn btn-sm btn-info">Chi tiết</a>
-                                <form th:action="@{/admin/rentals/{id}/approve(id=${rental.id})}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
-                                </form>
-                                <form th:action="@{/admin/rentals/{id}/reject(id=${rental.id})}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-danger">Từ chối</button>
-                                </form>
+                            <span th:text="${rental.pickupDateTime != null ? rental.pickupDateTime.toString().replace('T', ' ').substring(0, 16) : 'N/A'}"></span>
+    - 
+                            <span th:text="${rental.returnDateTime != null ? rental.returnDateTime.toString().replace('T', ' ').substring(0, 16) : 'N/A'}"></span>
                             </td>
-                        </tr>
-                    </tbody>
+        
+                            <td th:text="${rental.totalPrice != null ? rental.totalPrice : 0} + ' đ'"></td>
+        
+                           td><span class="badge bg-warning">Đang xử lý</span></td>
+        
+                    <td>
+                        <a th:href="@{/admin/rentals/{id}(id=${rental.id})}" class="btn btn-sm btn-info">Chi tiết</a>
+                    <form th:action="@{/admin/rentals/{id}/approve(id=${rental.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                    </form>
+                    <form th:action="@{/admin/rentals/{id}/reject(id=${rental.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger">Từ chối</button>
+                    </form>
+                    </td>
+                </tr>
+            </tbody>
                 </table>
             </div>
         </div>
