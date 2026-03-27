@@ -11,4 +11,8 @@ public interface VehicleRepository extends MongoRepository<Vehicle, String> {
     List<Vehicle> findByIsAvailableTrue();
     List<Vehicle> findByVehicleType(String vehicleType);
     List<Vehicle> findByBrand(String brand);
+    List<Vehicle> findByVehicleTypeAndIsAvailableTrue(String vehicleType);
+    List<Vehicle> findByBrandAndIsAvailableTrue(String brand);
+    List<Vehicle> findTop6ByIsAvailableTrueOrderByRatingsDesc();
+    List<Vehicle> findTop6ByVehicleTypeAndIsAvailableTrueOrderByRatingsDesc(String vehicleType);
 }

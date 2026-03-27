@@ -33,11 +33,13 @@ public class AdminController {
         var vehicles = adminService.getAllVehicles();
         var availableCount = adminService.getAvailableVehiclesCount();
         var totalCount = adminService.getTotalVehiclesCount();
-        
+        var topRented = adminService.getTopRentedVehicles(5);
+
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("availableCount", availableCount);
         model.addAttribute("totalCount", totalCount);
-        
+        model.addAttribute("topRented", topRented);
+
         return "admin/dashboard";
     }
 

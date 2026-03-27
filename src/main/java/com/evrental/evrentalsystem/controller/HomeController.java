@@ -24,14 +24,11 @@ public class HomeController {
     @GetMapping("/")
     public String index(Model model) {
         // Lấy 6 xe được đánh giá cao nhất để hiển thị
-        var featuredVehicles = vehicleRepository.findByIsAvailableTrue()
-            .stream()
-            .limit(6)
-            .toList();
-        
+        var featuredVehicles = vehicleRepository.findTop6ByIsAvailableTrueOrderByRatingsDesc();
+
         model.addAttribute("featuredVehicles", featuredVehicles);
         model.addAttribute("totalVehicles", vehicleRepository.count());
-        
+
         return "index";
     }
 

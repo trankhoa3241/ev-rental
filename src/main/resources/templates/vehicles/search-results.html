@@ -10,16 +10,23 @@
 <body>
     <div class="container mt-5">
         <h1>Kết quả tìm kiếm</h1>
-        <p class="text-muted">Tìm thấy <strong>12</strong> xe phù hợp với tiêu chí của bạn</p>
+        <p class="text-muted">Tìm thấy <strong th:text="${vehicles.size()}">0</strong> xe phù hợp với tiêu chí của bạn</p>
 
-        <div class="row mt-4">
-            <div class="col-md-3">
+        <div class="row mt-4" th:if="${vehicles.isEmpty()}">
+            <div class="col-md-12">
+                <div class="alert alert-info">Không tìm thấy xe phù hợp. Thử thay đổi điều kiện tìm kiếm.</div>
+            </div>
+        </div>
+
+        <div class="row mt-4" th:unless="${vehicles.isEmpty()}">
+            <div class="col-md-4 mb-3" th:each="vehicle : ${vehicles}">
                 <div class="card">
-                    <img src="https://via.placeholder.com/200" class="card-img-top">
+                    <img th:src="${vehicle.imageUrl}" class="card-img-top" style="height: 180px; object-fit: cover;">
                     <div class="card-body">
-                        <h5>Tesla Model 3</h5>
-                        <p class="text-muted">₫250,000/giờ</p>
-                        <a href="/vehicles/1" class="btn btn-primary">Xem chi tiết</a>
+                        <h5 class="card-title" th:text="${vehicle.brand + ' ' + vehicle.model}"></h5>
+                        <p class="text-muted" th:text="${vehicle.vehicleType == 'MOTORCYCLE' ? 'Xe máy' : 'Ô tô'}"></p>
+                        <p class="text-muted">Giá: <span th:text="'₫' + ${#numbers.formatInteger(vehicle.pricePerHour, 0)}"></span>/giờ</p>
+                        <a th:href="@{/vehicles/{id}(id=${vehicle.id})}" class="btn btn-primary">Xem chi tiết</a>
                     </div>
                 </div>
             </div>

@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,9 @@ public class AdminService {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private RentalService rentalService;
 
     /**
      * Lấy tất cả xe
@@ -177,5 +181,12 @@ public class AdminService {
      */
     public long getTotalVehiclesCount() {
         return vehicleRepository.count();
+    }
+
+    /**
+     * Top xe được thuê nhiều nhất
+     */
+    public List<Map.Entry<Vehicle, Long>> getTopRentedVehicles(int limit) {
+        return rentalService.getTopRentedVehicles(limit);
     }
 }

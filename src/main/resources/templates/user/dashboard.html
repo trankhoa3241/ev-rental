@@ -18,7 +18,7 @@
                     <div class="card-body text-center">
                         <i class="fas fa-car fa-3x text-primary mb-3"></i>
                         <h5 class="card-title">Chuyến đi sắp tới</h5>
-                        <p class="display-6">2</p>
+                        <p class="display-6" th:text="${pending}">0</p>
                     </div>
                 </div>
             </div>
@@ -27,7 +27,16 @@
                     <div class="card-body text-center">
                         <i class="fas fa-history fa-3x text-secondary mb-3"></i>
                         <h5 class="card-title">Chuyến đi hoàn thành</h5>
-                        <p class="display-6">15</p>
+                        <p class="display-6" th:text="${completed}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Chuyến đi đã duyệt</h5>
+                        <p class="display-6" th:text="${confirmed}">0</p>
                     </div>
                 </div>
             </div>
@@ -36,16 +45,7 @@
                     <div class="card-body text-center">
                         <i class="fas fa-wallet fa-3x text-success mb-3"></i>
                         <h5 class="card-title">Tổng chi tiêu</h5>
-                        <p class="display-6">₫5.2M</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-leaf fa-3x text-danger mb-3"></i>
-                        <h5 class="card-title">CO2 tiết kiệm</h5>
-                        <p class="display-6">245kg</p>
+                        <p class="display-6" th:text="${#numbers.formatInteger(spent, 0)}">₫0</p>
                     </div>
                 </div>
             </div>

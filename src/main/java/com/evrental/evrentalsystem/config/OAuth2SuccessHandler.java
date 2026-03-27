@@ -54,7 +54,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     log.info("👤 [OAuth2SuccessHandler] Regular user detected, redirecting to: {}", redirectUrl);
                 }
             } else {
-                log.warn("⚠️ [OAuth2SuccessHandler] User not found in DB for email: {}", email);
+                // Tạo user mới cho OAuth2
+                User newUser = new User();
+                newUser.setEmail(email);
+                newUser.setFullName(name);
+                newUser.setRole("USER");
+                newUser.setIsActive(true);
+                newUser.setOauthProvider("GOOGLE");
+                newUser.setOauthId(oAuth2User.getAttribute("sub"));
+                userRepository.save(newUser);
+                log.info("🆕 [OAuth2SuccessHandler] Created new user: {}", email);
                 redirectUrl = "/";
             }
             

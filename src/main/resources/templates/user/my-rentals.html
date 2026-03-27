@@ -13,62 +13,81 @@
         
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#ongoing">Chuyến sắp tới</a>
+                <a class="nav-link active" data-bs-toggle="tab" href="#pending">Đang xử lý</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#completed">Đã hoàn thành</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#confirmed">Đã duyệt</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#cancelled">Đã hủy</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#rejected">Không duyệt</a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div id="ongoing" class="tab-pane fade show active">
-                <div class="card mb-3">
+            <div id="pending" class="tab-pane fade show active">
+                <div th:if="${rentals.stream().filter(r -> r.status == 'PENDING').count() == 0}" class="alert alert-info">Không có yêu cầu đang xử lý</div>
+                <div th:each="rental : ${rentals}" th:if="${rental.status == 'PENDING'}" class="card mb-3">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3">
-                                <img src="https://via.placeholder.com/150" class="img-fluid rounded" alt="Vehicle">
+                                <img th:src="${rental.vehicle.imageUrl}" class="img-fluid rounded" alt="Vehicle">
                             </div>
                             <div class="col-md-6">
-                                <h5>Tesla Model 3</h5>
-                                <p class="text-muted">Ngày 20/03/2024 - 21/03/2024</p>
-                                <p><strong>Tổng giá:</strong> ₫250,000</p>
-                                <span class="badge bg-warning">Đang di chuyển</span>
+                                <h5 th:text="${rental.vehicle.brand + ' ' + rental.vehicle.model}"></h5>
+                                <p class="text-muted" th:text="${#dates.format(rental.pickupDateTime, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#dates.format(rental.returnDateTime, 'dd/MM/yyyy HH:mm')}"></p>
+                                <p><strong>Tổng giá:</strong> <span th:text="${#numbers.formatInteger(rental.totalPrice, 0)}"></span></p>
+                                <span class="badge bg-warning">Đang xử lý</span>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-primary w-100 mb-2">Chi tiết</button>
-                                <button class="btn btn-danger w-100">Huỷ chuyến</button>
+                                <a th:href="@{/vehicles/{id}(id=${rental.vehicle.id})}" class="btn btn-primary w-100 mb-2">Chi tiết</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="completed" class="tab-pane fade">
-                <div class="card mb-3">
+            <div id="confirmed" class="tab-pane fade">
+                <div th:if="${rentals.stream().filter(r -> r.status == 'CONFIRMED').count() == 0}" class="alert alert-info">Không có chuyến đã duyệt</div>
+                <div th:each="rental : ${rentals}" th:if="${rental.status == 'CONFIRMED'}" class="card mb-3">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3">
-                                <img src="https://via.placeholder.com/150" class="img-fluid rounded" alt="Vehicle">
+                                <img th:src="${rental.vehicle.imageUrl}" class="img-fluid rounded" alt="Vehicle">
                             </div>
                             <div class="col-md-6">
-                                <h5>Honda Vision</h5>
-                                <p class="text-muted">Ngày 15/03/2024 - 16/03/2024</p>
-                                <p><strong>Tổng giá:</strong> ₫100,000</p>
-                                <span class="badge bg-success">Hoàn thành</span>
+                                <h5 th:text="${rental.vehicle.brand + ' ' + rental.vehicle.model}"></h5>
+                                <p class="text-muted" th:text="${#dates.format(rental.pickupDateTime, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#dates.format(rental.returnDateTime, 'dd/MM/yyyy HH:mm')}"></p>
+                                <p><strong>Tổng giá:</strong> <span th:text="${#numbers.formatInteger(rental.totalPrice, 0)}"></span></p>
+                                <span class="badge bg-success">Đã duyệt</span>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-primary w-100">Chi tiết</button>
+                                <a th:href="@{/vehicles/{id}(id=${rental.vehicle.id})}" class="btn btn-primary w-100">Chi tiết</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="cancelled" class="tab-pane fade">
-                <p class="text-muted">Không có chuyến đi bị hủy</p>
+            <div id="rejected" class="tab-pane fade">
+                <div th:if="${rentals.stream().filter(r -> r.status == 'REJECTED').count() == 0}" class="alert alert-info">Không có yêu cầu bị từ chối</div>
+                <div th:each="rental : ${rentals}" th:if="${rental.status == 'REJECTED'}" class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <img th:src="${rental.vehicle.imageUrl}" class="img-fluid rounded" alt="Vehicle">
+                            </div>
+                            <div class="col-md-6">
+                                <h5 th:text="${rental.vehicle.brand + ' ' + rental.vehicle.model}"></h5>
+                                <p class="text-muted" th:text="${#dates.format(rental.pickupDateTime, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#dates.format(rental.returnDateTime, 'dd/MM/yyyy HH:mm')}"></p>
+                                <p><strong>Tổng giá:</strong> <span th:text="${#numbers.formatInteger(rental.totalPrice, 0)}"></span></p>
+                                <span class="badge bg-danger">Không duyệt</span>
+                            </div>
+                            <div class="col-md-3">
+                                <a th:href="@{/vehicles/{id}(id=${rental.vehicle.id})}" class="btn btn-primary w-100">Chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

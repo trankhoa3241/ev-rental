@@ -70,6 +70,9 @@
                     <a class="nav-link active" th:href="@{/admin/dashboard}">
                         <i class="fas fa-chart-pie"></i> Dashboard
                     </a>
+                    <a class="nav-link" th:href="@{/admin/rentals}">
+                        <i class="fas fa-calendar-check"></i> Quản lý đặt xe
+                    </a>
                     <a class="nav-link" th:href="@{/admin/vehicle/new}">
                         <i class="fas fa-plus"></i> Thêm xe mới
                     </a>
@@ -180,6 +183,18 @@
                 </div>
 
                 <hr class="my-5">
+
+                <h3 class="fw-bold mb-3">Top xe được thuê nhiều nhất</h3>
+                <div class="row g-3 mb-5" th:if="${topRented != null and !topRented.isEmpty()}">
+                    <div th:each="entry : ${topRented}" class="col-md-4">
+                        <div class="vehicle-card p-3">
+                            <h5 th:text="${entry.key.brand + ' ' + entry.key.model}"></h5>
+                            <p class="mb-1">Số lượt thuê: <strong th:text="${entry.value}"></strong></p>
+                            <p class="mb-1">Trạng thái: <span th:text="${entry.key.isAvailable ? 'Có sẵn' : 'Đang thuê'}"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${topRented == null || topRented.isEmpty()}" class="alert alert-info">Chưa có dữ liệu xe được thuê</div>
 
                 <div class="text-center text-muted">
                     <small>&copy; 2024 EV Rental Admin. All rights reserved.</small>
