@@ -47,61 +47,57 @@
             <div class="col-lg-3 mb-4">
                 <div class="card bg-light">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold"><i class="fas fa-filter"></i> Bộ lọc</h5>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Loại xe</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicleType" id="motorcycle" value="MOTORCYCLE">
-                                <label class="form-check-label" for="motorcycle">Xe máy</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicleType" id="car" value="CAR">
-                                <label class="form-check-label" for="car">Ô tô</label>
-                            </div>
-                        </div>
+    <h5 class="card-title fw-bold"><i class="fas fa-filter"></i> Bộ lọc</h5>
+    
+    <form th:action="@{/vehicles}" method="get">
+        
+        <div class="mb-3">
+            <label class="form-label fw-bold">Loại xe</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="vehicleType" id="motorcycle" value="MOTORCYCLE"
+                       th:checked="${selectedType == 'MOTORCYCLE'}">
+                <label class="form-check-label" for="motorcycle">Xe máy</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="vehicleType" id="car" value="CAR"
+                       th:checked="${selectedType == 'CAR'}">
+                <label class="form-check-label" for="car">Ô tô</label>
+            </div>
+        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Thương hiệu</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="tesla">
-                                <label class="form-check-label" for="tesla">Tesla</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="honda">
-                                <label class="form-check-label" for="honda">Honda</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="vespa">
-                                <label class="form-check-label" for="vespa">Vespa</label>
-                            </div>
-                        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Thương hiệu</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="brand" id="tesla" value="Tesla"
+                       th:checked="${selectedBrand == 'Tesla'}">
+                <label class="form-check-label" for="tesla">Tesla</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="brand" id="honda" value="Honda"
+                       th:checked="${selectedBrand == 'Honda'}">
+                <label class="form-check-label" for="honda">Honda</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="brand" id="vespa" value="Vespa"
+                       th:checked="${selectedBrand == 'Vespa'}">
+                <label class="form-check-label" for="vespa">Vespa</label>
+            </div>
+        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Giá tối đa</label>
-                            <input type="range" class="form-range" min="0" max="1000000" id="priceRange">
-                            <small class="text-muted">₫0 - ₫1,000,000</small>
-                        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Giá tối đa</label>
+            <input type="range" class="form-range" min="0" max="1000000" step="10000" 
+                   name="maxPrice" id="priceRange" th:value="${currentMaxPrice ?: 1000000}"
+                   oninput="this.nextElementSibling.innerText = '₫' + Number(this.value).toLocaleString()">
+            <small class="text-muted" th:text="${currentMaxPrice != null ? '₫' + #numbers.formatInteger(currentMaxPrice, 0, 'POINT') : '₫1,000,000'}"></small>
+        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Dung lượng pin</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="battery30">
-                                <label class="form-check-label" for="battery30">30+ kWh</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="battery60">
-                                <label class="form-check-label" for="battery60">60+ kWh</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="battery100">
-                                <label class="form-check-label" for="battery100">100+ kWh</label>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary w-100 mb-2"><i class="fas fa-search"></i> Áp dụng</button>
-                        <button class="btn btn-secondary w-100">Reset</button>
-                    </div>
+        <button type="submit" class="btn btn-primary w-100 mb-2">
+            <i class="fas fa-search"></i> Áp dụng
+        </button>
+        <a th:href="@{/vehicles}" class="btn btn-secondary w-100">Reset</a>
+    </form>
+</div>
                 </div>
             </div>
 
@@ -144,10 +140,10 @@
                     </div>
                 </div>
 
-                <!-- No vehicles message -->
-                <div class="alert alert-warning" th:unless="${vehicles} and ${vehicles.size() > 0}">
-                    <i class="fas fa-info-circle"></i> <strong>Không có xe nào!</strong> 
-                    <p>Vui lòng kiểm tra xem MongoDB có dữ liệu không. Truy cập <a href="/api/debug/users">/api/debug/users</a> để test kết nối.</p>
+                <div class="text-center py-5" th:unless="${vehicles != null and !vehicles.isEmpty()}">
+                    <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không tìm thấy xe phù hợp</h5>
+                    <p class="small text-muted">Vui lòng thử lại với bộ lọc khác hoặc nhấn "Xóa lọc".</p>
                 </div>
 
                 <!-- Pagination -->

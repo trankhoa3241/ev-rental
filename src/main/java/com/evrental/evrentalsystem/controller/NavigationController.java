@@ -11,9 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.Optional;
+import java.util.List;
 
 @Controller
 public class NavigationController {
@@ -27,40 +29,40 @@ public class NavigationController {
     @Autowired
     private RentalService rentalService;
 
-    @GetMapping({"/vehicles", "/vehicles/"})
-    public String vehicles(Model model) {
-        var vehicles = vehicleRepository.findByIsAvailableTrue();
-        System.out.println("DEBUG: Total vehicles found: " + vehicles.size());
-        for (Vehicle v : vehicles) {
-            System.out.println("DEBUG: Vehicle - ID: " + v.getId() + ", Brand: " + v.getBrand() + ", Model: " + v.getModel());
-        }
-        model.addAttribute("vehicles", vehicles);
-        return "vehicles/list";
-    }
+    
 
     @GetMapping("/vehicles/search")
-    public String searchVehicles(String vehicleType, String brand, double maxPrice, Model model) {
-        var vehicles = vehicleRepository.findByIsAvailableTrue();
+public String searchVehicles(
+    @RequestParam(required = false) String vehicleType, 
+    @RequestParam(required = false) String brand, 
+    @RequestParam(required = false) Double maxPrice, 
+    Model model) {
+    
+    // ĐỔI TẠI ĐÂY: Lấy tất cả xe thay vì chỉ xe Available
+    var vehicles = vehicleRepository.findAll(); 
 
-        if (vehicleType != null && !vehicleType.isEmpty()) {
-            vehicles = vehicleRepository.findByVehicleTypeAndIsAvailableTrue(vehicleType);
-        }
-
-        if (brand != null && !brand.isEmpty()) {
-            vehicles = vehicles.stream().filter(v -> v.getBrand().equalsIgnoreCase(brand)).toList();
-        }
-
-        if (maxPrice > 0) {
-            vehicles = vehicles.stream().filter(v -> v.getPricePerHour() != null && v.getPricePerHour().doubleValue() <= maxPrice).toList();
-        }
-
-        model.addAttribute("vehicles", vehicles);
-        model.addAttribute("selectedVehicleType", vehicleType);
-        model.addAttribute("selectedBrand", brand);
-        model.addAttribute("maxPrice", maxPrice);
-
-        return "vehicles/search-results";
+    if (vehicleType != null && !vehicleType.isEmpty()) {
+        // Nếu Repo có hàm findByVehicleType thì dùng, nếu không thì dùng stream để lọc
+        vehicles = vehicles.stream()
+                .filter(v -> v.getVehicleType().equalsIgnoreCase(vehicleType))
+                .toList();
     }
+
+    if (brand != null && !brand.isEmpty()) {
+        vehicles = vehicles.stream()
+                .filter(v -> v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand))
+                .toList();
+    }
+
+    if (maxPrice != null && maxPrice > 0) {
+        vehicles = vehicles.stream()
+                .filter(v -> v.getPricePerHour() != null && v.getPricePerHour().doubleValue() <= maxPrice)
+                .toList();
+    }
+
+    model.addAttribute("vehicles", vehicles);
+    return "vehicles/search-results"; 
+}
 
     @GetMapping("/vehicles/{id}")
     public String vehicleDetail(@PathVariable String id, Model model) {
@@ -87,6 +89,46 @@ public class NavigationController {
             return "redirect:/vehicles";
         }
     }
+    // CHỈ GIỮ LẠI MỘT HÀM NÀY CHO TRANG /vehicles
+    @GetMapping({"/vehicles", "/vehicles/"})
+    public String showVehicleList(
+            @RequestParam(required = false) String vehicleType,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Double maxPrice,
+            Model model) {
+
+        // 1. Logic lấy dữ liệu: Mặc định lấy TẤT CẢ xe
+        List<Vehicle> vehicles = vehicleRepository.findAll(); 
+
+        // 2. Thực hiện lọc (Chỉ lọc nếu người dùng có chọn điều kiện)
+        if (vehicleType != null && !vehicleType.isEmpty()) {
+            vehicles = vehicles.stream()
+            .filter(v -> v.getVehicleType() != null && v.getVehicleType().equalsIgnoreCase(vehicleType))
+            .toList();
+        }
+
+        if (brand != null && !brand.isEmpty()) {
+            vehicles = vehicles.stream()
+                    .filter(v -> v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand))
+                    .toList();
+        }
+
+        if (maxPrice != null && maxPrice > 0) {
+            vehicles = vehicles.stream()
+                    .filter(v -> v.getPricePerHour() != null && v.getPricePerHour().doubleValue() <= maxPrice)
+                    .toList();
+        }
+
+        // 3. Đưa dữ liệu ra trang list.html
+        model.addAttribute("vehicles", vehicles);
+        model.addAttribute("selectedType", vehicleType);
+        model.addAttribute("selectedBrand", brand);
+        model.addAttribute("currentMaxPrice", maxPrice);
+
+        return "vehicles/list";
+    }
+
+    // Hàm searchVehicles của bạn giữ nguyên bên dưới, không sửa gì cả
 
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
